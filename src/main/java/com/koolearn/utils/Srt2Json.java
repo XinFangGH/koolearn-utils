@@ -15,7 +15,9 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoField;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -26,6 +28,30 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @date 2020/2/17 13:41
  */
 public class Srt2Json {
+
+    public static void srt2JsonStart(){
+        final JFrame jf = new JFrame("转换窗口");
+        jf.setSize(400, 250);
+        jf.setLocationRelativeTo(null);
+        jf.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+
+        JPanel panel = new JPanel();
+
+        // 创建文本区域, 用于显示相关信息
+        final JTextArea msgTextArea = new JTextArea(10, 30);
+        msgTextArea.setLineWrap(true);
+        panel.add(msgTextArea);
+
+        JButton openBtn = new JButton("选择文件");
+        //鼠标点击事件
+        openBtn.addActionListener(e -> showFileOpenDialog(jf, msgTextArea));
+
+        panel.add(openBtn);
+
+        jf.setContentPane(panel);
+        jf.setVisible(true);
+    }
+
 
     public static void main(String[] args) {
         final JFrame jf = new JFrame("转换窗口");
@@ -116,9 +142,9 @@ public class Srt2Json {
                     String[] split = tempStr.split(" --> ");
                     DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss,SSS");
                     LocalTime start = LocalTime.parse(split[0], dateTimeFormatter);
-                    srtJsonDomain.setStart(start.get(ChronoField.MILLI_OF_DAY));
+                    srtJsonDomain.setStart(start.get(ChronoField.SECOND_OF_DAY));
                     LocalTime end = LocalTime.parse(split[1], dateTimeFormatter);
-                    srtJsonDomain.setEnd(end.get(ChronoField.MILLI_OF_DAY));
+                    srtJsonDomain.setEnd(end.get(ChronoField.SECOND_OF_DAY));
                 } else if (i == 2) {
                     //读取中文信息
                     tempStr = reader.readLine();
@@ -135,7 +161,11 @@ public class Srt2Json {
             }
         }
         reader.close();
-        String json = JSON.toJSONString(list);
+        Map<String,Object> map = new HashMap<>(4);
+        map.put("msg","success");
+        map.put("errorCode","0");
+        map.put("sentence",list);
+        String json = JSON.toJSONString(map);
         //生成的文件名
         String srtPath = file.getAbsolutePath();
         String jsonPath = srtPath.substring(0, srtPath.lastIndexOf(".")) + "_json.json";
